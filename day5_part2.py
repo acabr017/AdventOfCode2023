@@ -1,24 +1,29 @@
 from icecream import ic
 
+
+def find_dst(number, map):
+    for line in map:
+        start_of_shift = int(line.split(" ")[0])
+        start_of_start = int(line.split(" ")[1])
+        step = int(line.split(" ")[2])
+        src_range = range(start_of_start, start_of_start + step)
+        if number in src_range:
+            dst_range = range(start_of_shift, start_of_shift + step)
+            return dst_range[src_range.index(number)]
+    return number
+
+
 file = open("day5_data.txt")
 data = file.read().strip().split("\n\n")
 file.close()
 
-# seeds = {i: [i] for i in data[0].split(" ")[1:]}
-seeds = data[0].split(" ")[1:]
-
-
+seeds = data[0].strip().split(" ")[1:]
 seed_start = [seeds[i] for i in range(0, len(seeds), 2)]
-seed_end = [seeds[i] for i in range(1, len(seeds), 2)]
+seed_step = [seeds[i] for i in range(1, len(seeds), 2)]
+seed_ranges = {}
+for i, val in enumerate(seed_start):
+    seed_ranges[i] = range(int(seed_start[i]), int(seed_start[i]) + int(seed_step[i]))
 
-all_seeds = []
-for i, seeds in enumerate(seed_start):
-    for i in range(int(seeds), int(seeds) + int(seed_end[i])):
-        all_seeds.append(str(i))
-
-seed_dict = {i: [i] for i in all_seeds}
-
-ic(seed_dict)
 
 seed_to_soil_map = sorted(data[1].split("\n")[1:])
 soil_to_fert_map = sorted(data[2].split("\n")[1:])
@@ -38,30 +43,21 @@ maps = [
     humidity_to_loc_map,
 ]
 
-
-def find_next_step(seed: int, map):
-    for line in map:
-        line = line.split(" ")
-        destination_start = int(line[0])
-        source_start = int(line[1])
-        step = int(line[2])
-        # ic(line, source_start, destination_start, step)
-        # ic(source_start <= seed < source_start + step)
-        if source_start <= seed < (source_start + step):
-            # return f"Found the right shift: Soil number for seed {seed} is {destination_start+(seed-source_start)}"
-            return str(destination_start + seed - source_start)
-    # return f"This is a direct translation: Soil number for seed {seed} is {seed}"
-    return str(seed)
-
-
-for seed, steps in seed_dict.items():
-    # ic(seed)
-    for map in maps:
-        # ic(map)
-        seed_dict[seed].append(find_next_step(int(steps[-1]), map))
-
-# ic(seeds)
+locations = {}
+lowest = 0
+for seed_range in seed_ranges.values():
+    for seed in seed_range:
+        soil_loc = find_dst(seed, seed_to_soil_map)
+        fert_loc = find_dst(soil_loc, soil_to_fert_map)
+        water_loc = find_dst(fert_loc, fert_to_water_map)
+        light_loc = find_dst(water_loc, water_to_light_map)
+        temp_loc = find_dst(light_loc, light_to_temp_map)
+        humidity_loc = find_dst(temp_loc, temp_to_humidity_map)
+        loc = find_dst(humidity_loc, humidity_to_loc_map)
+        if lowest == 0:
+            lowest = loc
+        elif loc < lowest:
+            lowest = loc
 
 
-lowest_loc = sorted([int(i[-1]) for i in seed_dict.values()])[0]
-ic(lowest_loc)
+ic(lowest)
