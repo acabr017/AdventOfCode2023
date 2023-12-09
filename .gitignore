@@ -12,6 +12,7 @@
 .idea/**/dictionaries
 .idea/**/shelf
 *.txt
+testing.py
 
 # AWS User-specific
 .idea/**/aws.xml

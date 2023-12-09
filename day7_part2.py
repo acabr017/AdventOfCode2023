@@ -11,7 +11,6 @@ high_card_strengths = {
     "K": "13",
     "Q": "12",
     "T": "10",
-    "J": "11",
 }
 
 
@@ -23,10 +22,35 @@ def hand_conversion(hand: list):
             output += char
         elif char.isdigit():
             output += char
+        elif char == "J":
+            output += char
         else:
             output += high_card_strengths[char]
         output += "|"
     return output
+
+
+def swapper(elements, swap, letter_to_swap):
+    elements = list(elements)
+    for i, char in enumerate(elements):
+        if char == letter_to_swap:
+            elements[i] = swap
+    return elements
+
+
+def deal_with_J(hand):
+    # formatted_hand = hand_conversion(hand)
+    # elements = formatted_hand.split("||")[0].split("|")
+    # bet = formatted_hand.split("||")[1]
+    count = Counter(hand)
+    if len(count) == 1:
+        return ("AAAAA", {"A": 1})
+
+    else:
+        highest = sorted([i for i in count.keys() if i != "J"])[-1]
+        elements = swapper(hand, highest, "J")
+
+    return (elements, Counter(elements))
 
 
 def organizer(hand, hand_counter):
@@ -55,17 +79,25 @@ three = []
 two_pair = []
 pair = []
 high = []
-
+J = []
 
 all_combos = [high, pair, two_pair, three, f_house, four, five]
 
 for line in data:
     hand = line.split(" ")[0]
-    hand_counter = Counter(hand)
+    if "J" in hand:
+        J.append(hand)
+        ic(hand)
+        hand, hand_counter = deal_with_J(hand)
+        ic(hand, hand_counter)
+    else:
+        hand_counter = Counter(hand)
     bet = line.split(" ")[1]
     hand = hand_conversion(hand) + "|" + bet
 
     organizer(hand, hand_counter)
+
+ic(J)
 
 full_sorted_list = []
 for kind in all_combos:
