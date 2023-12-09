@@ -6,12 +6,7 @@ file = open("day7_data.txt")
 data = file.read().split("\n")
 file.close()
 
-high_card_strengths = {
-    "A": "14",
-    "K": "13",
-    "Q": "12",
-    "T": "10",
-}
+high_card_strengths = {"A": "14", "K": "13", "Q": "12", "T": "10", "J": "01"}
 
 
 def hand_conversion(hand: list):
@@ -21,8 +16,6 @@ def hand_conversion(hand: list):
             output += "0"
             output += char
         elif char.isdigit():
-            output += char
-        elif char == "J":
             output += char
         else:
             output += high_card_strengths[char]
@@ -44,13 +37,20 @@ def deal_with_J(hand):
     # bet = formatted_hand.split("||")[1]
     count = Counter(hand)
     if len(count) == 1:
-        return ("AAAAA", {"A": 1})
+        return {"A": 1}
 
     else:
-        highest = sorted([i for i in count.keys() if i != "J"])[-1]
-        elements = swapper(hand, highest, "J")
+        highest_freq = 0
+        highest_val_to_swap = ""
+        for k, v in count.items():
+            if k == "J":
+                continue
+            if v >= highest_freq:
+                highest_freq = v
+                highest_val_to_swap = k
+        elements = swapper(hand, highest_val_to_swap, "J")
 
-    return (elements, Counter(elements))
+    return Counter(elements)
 
 
 def organizer(hand, hand_counter):
@@ -79,17 +79,13 @@ three = []
 two_pair = []
 pair = []
 high = []
-J = []
 
 all_combos = [high, pair, two_pair, three, f_house, four, five]
 
 for line in data:
     hand = line.split(" ")[0]
     if "J" in hand:
-        J.append(hand)
-        ic(hand)
-        hand, hand_counter = deal_with_J(hand)
-        ic(hand, hand_counter)
+        hand_counter = deal_with_J(hand)
     else:
         hand_counter = Counter(hand)
     bet = line.split(" ")[1]
@@ -97,16 +93,17 @@ for line in data:
 
     organizer(hand, hand_counter)
 
-ic(J)
 
 full_sorted_list = []
 for kind in all_combos:
     full_sorted_list += sorted(kind)
 
-ic(full_sorted_list)
+
 total_winnings = 0
 
 for i, hand in enumerate(full_sorted_list):
     total_winnings += int(hand.split("||")[1]) * (i + 1)
+
+# ic(full_sorted_list)
 
 ic(total_winnings)
